@@ -22,7 +22,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   disable_password_authentication = var.admin_password != null ? false : true
   network_interface_ids           = var.network_interface_ids
   # TODO: Custom data over SCM
-  custom_data   = var.custom_data != null && fileexists("${path.module}/${var.custom_data}") ? base64encode(file("${path.module}/${var.custom_data}")) : null
+  custom_data   = var.custom_data != "null" && fileexists("${path.module}/${var.custom_data}") ? base64encode(file("${path.module}/${var.custom_data}")) : null
   computer_name = var.computer_name
 
 
