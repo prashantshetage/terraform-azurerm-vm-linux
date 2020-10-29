@@ -45,7 +45,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   dynamic "identity" {
-    for_each = var.identity
+    for_each = var.identity[*]
     content {
       type         = identity.value.type
       identity_ids = identity.value.identity_ids
