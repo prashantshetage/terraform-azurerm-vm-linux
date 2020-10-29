@@ -32,6 +32,13 @@ variable "source_image_reference" {
     version   = string #(Optional) Specifies the version of the image used to create the virtual machines
   })
   description = "(Required) VM image to boot this VM"
+  default     = null
+}
+
+variable "source_image_id" {
+  type        = string
+  description = "(Optional) The ID of the Image which this Virtual Machine should be created from"
+  default     = null
 }
 
 variable "os_disk" {
@@ -91,15 +98,6 @@ variable "identity" {
     identity_ids = list(string) #(Optional) A list of User Managed Identity ID's which should be assigned to the Linux Virtual Machine.
   })
   description = "(Optional) Identities to be assigned to VM"
-  default = {
-    type         = null
-    identity_ids = null
-  }
-}
-
-variable "source_image_id" {
-  type        = string
-  description = "(Optional) The ID of the Image which this Virtual Machine should be created from"
   default     = null
 }
 

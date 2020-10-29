@@ -1,16 +1,4 @@
 
-// Create random id for resource naming
-/*
-resource "random_id" "vm-sa" {
-  keepers = {
-    vm_name = var.vm_name
-  }
-
-  byte_length = 6
-}
-*/
-
-
 // Virtual Machine
 resource "azurerm_linux_virtual_machine" "vm" {
   name                            = local.vm_name
@@ -22,7 +10,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   disable_password_authentication = var.admin_password != null ? false : true
   network_interface_ids           = var.network_interface_ids
   # TODO: Custom data over SCM
-  custom_data   = var.custom_data != "null" && fileexists("${path.module}/${var.custom_data}") ? base64encode(file("${path.module}/${var.custom_data}")) : null
+  custom_data   = var.custom_data #!= "null" && fileexists("${path.module}/${var.custom_data}") ? base64encode(file("${path.module}/${var.custom_data}")) : null
   computer_name = var.computer_name
 
 
@@ -46,20 +34,26 @@ resource "azurerm_linux_virtual_machine" "vm" {
     write_accelerator_enabled = var.os_disk.write_accelerator_enabled
   }
 
-  source_image_reference {
-    publisher = var.source_image_reference.publisher
-    offer     = var.source_image_reference.offer
-    sku       = var.source_image_reference.sku
-    version   = var.source_image_reference.version
+  dynamic "source_image_reference" {
+    for_each = var.source_image_reference[*]
+    content {
+      publisher = source_image_reference.value.publisher
+      offer     = source_image_reference.value.offer
+      sku       = source_image_reference.value.sku
+      version   = source_image_reference.value.version
+    }
   }
 
-  /* identity {
-    type = var.identity.type
-    identity_ids = var.identity.identity_ids
-  } */
+  dynamic "identity" {
+    for_each = var.identity
+    content {
+      type         = identity.value.type
+      identity_ids = identity.value.identity_ids
+    }
+  }
 
-  source_image_id            = var.source_image_id
-  
+  source_image_id = var.source_image_id
+
   additional_capabilities {
     ultra_ssd_enabled = var.additional_capabilities.ultra_ssd_enabled
   }
