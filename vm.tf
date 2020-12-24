@@ -35,7 +35,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   dynamic "source_image_reference" {
-    for_each = var.source_image_reference[*]
+    for_each = var.source_image_id == null ? var.source_image_reference[*] : []
     content {
       publisher = source_image_reference.value.publisher
       offer     = source_image_reference.value.offer
