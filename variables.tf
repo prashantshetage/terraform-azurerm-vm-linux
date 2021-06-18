@@ -1,246 +1,276 @@
-// Required Variables
-variable "resource_group_name" {
-  type        = string
-  description = "(Required) The name of the Resource Group in which to create the Virtual Machine"
-}
-
 variable "location" {
+  description = "Azure location."
   type        = string
-  description = " (Required) The Azure location where the Linux Virtual Machine should exist"
 }
 
-variable "name" {
+variable "location_short" {
+  description = "Short string for Azure location."
   type        = string
-  description = "(Required) The name of the Linux Virtual Machine"
 }
 
-variable "admin_username" {
+variable "client_name" {
+  description = "Client name/account used in naming"
   type        = string
-  description = "(Required) The username of the local administrator used for the Virtual Machine"
 }
 
-variable "network_interface_ids" {
-  type        = list(string)
-  description = "(Required) A list of Network Interface ID's which should be attached to this Virtual Machine"
+variable "environment" {
+  description = "Project environment"
+  type        = string
 }
 
-variable "source_image_reference" {
-  type = object({
-    publisher = string #(Optional) Specifies the publisher of the image used to create the virtual machines
-    offer     = string #(Optional) Specifies the offer of the image used to create the virtual machines
-    sku       = string #(Optional) Specifies the SKU of the image used to create the virtual machines
-    version   = string #(Optional) Specifies the version of the image used to create the virtual machines
-  })
-  description = "(Required) VM image to boot this VM"
+variable "stack" {
+  description = "Project stack name"
+  type        = string
+}
+
+variable "resource_group_name" {
+  description = "Resource group name"
+  type        = string
+}
+
+variable "subnet_id" {
+  description = "Id of the Subnet in which create the Virtual Machine"
+  type        = string
+}
+
+variable "name_prefix" {
+  description = "Optional prefix for the generated name"
+  type        = string
+  default     = ""
+}
+
+### SSH Connection inputs
+variable "ssh_public_key" {
+  description = "SSH public key"
+  type        = string
   default     = null
 }
 
-variable "source_image_id" {
-  type        = string
-  description = "(Optional) The ID of the Image which this Virtual Machine should be created from"
-  default     = null
-}
-
-variable "os_disk" {
-  type = object({
-    caching                   = string #(Required) The Type of Caching which should be used for the Internal OS Disk
-    storage_account_type      = string #(Required) The Type of Storage Account which should back this the Internal OS Disk
-    disk_size_gb              = number #(Optional) The Size of the Internal OS Disk in GB
-    disk_encryption_set_id    = string #(Optional) The ID of the Disk Encryption Set which should be used to Encrypt this OS Disk
-    name                      = string #(Optional) The name which should be used for the Internal OS Disk. Changing this forces a new resource to be created
-    write_accelerator_enabled = bool   #(Optional) Should Write Accelerator be Enabled for this OS Disk?
-  })
-  description = "(Required) OS disk properties for VM"
-}
-
-variable "size" {
-  type        = string
-  description = "(Required) The SKU which should be used for this Virtual Machine"
-}
-
-variable "admin_ssh_key" {
-  type = map(object({
-    public_key = string
-    username   = string
-  }))
-  description = "(Optional) One or more admin_ssh_key blocks as defined below"
-}
-
-
-// Optional Variables
+### Password authentication
 variable "admin_password" {
+  description = "Password for the administrator account of the virtual machine."
   type        = string
-  description = "(Optional) The Password which should be used for the local-administrator on this Virtual Machine"
   default     = null
 }
 
-variable "disable_password_authentication" {
+### Network inputs
+variable "custom_public_ip_name" {
+  description = "Custom name for public IP. Should be suffixed by \"-pubip\". Generated if not set."
+  type        = string
+  default     = null
+}
+
+variable "custom_nic_name" {
+  description = "Custom name for the NIC interface. Should be suffixed by \"-nic\". Generated if not set."
+  type        = string
+  default     = null
+}
+
+variable "nic_enable_accelerated_networking" {
+  description = "Should Accelerated Networking be enabled? Defaults to `false`."
   type        = bool
-  description = "(Optional) Should Password Authentication be disabled on this Virtual Machine?"
-  default     = true
+  default     = false
 }
 
-variable "computer_name" {
+variable "nic_extra_tags" {
+  description = "Extra tags to set on the network interface."
+  type        = map(string)
+  default     = {}
+}
+
+variable "nic_nsg_id" {
+  description = "NSG ID to associate on the Network Interface. No association if null."
   type        = string
-  description = "(Optional) Specifies the Hostname which should be used for this Virtual Machin"
   default     = null
+}
+
+variable "static_private_ip" {
+  description = "Static private IP. Private IP is dynamic if not set."
+  type        = string
+  default     = null
+}
+
+variable "custom_ipconfig_name" {
+  description = "Custom name for the IP config of the NIC. Should be suffixed by \"-nic-ipconfig\". Generated if not set."
+  type        = string
+  default     = null
+}
+
+### VM inputs
+variable "admin_username" {
+  description = "Username for Virtual Machine administrator account"
+  type        = string
 }
 
 variable "custom_data" {
-  type        = string
-  description = "(Optional) The Base64-Encoded Custom Data which should be used for this Virtual Machine"
-  default     = null
-}
-
-variable "identity" {
-  type = object({
-    type         = string       #(Required) The type of Managed Identity which should be assigned to the Linux Virtual Machine
-    identity_ids = list(string) #(Optional) A list of User Managed Identity ID's which should be assigned to the Linux Virtual Machine.
-  })
-  description = "(Optional) Identities to be assigned to VM"
-  default     = null
-}
-
-variable "additional_capabilities" {
-  type = object({
-    ultra_ssd_enabled = bool #(Optional) Should the capacity to enable Data Disks of the UltraSSD_LRS storage account type be supported on this Virtual Machine?
-  })
-  description = "(Optional) A additional_capabilities block"
-  default = {
-    ultra_ssd_enabled = false
-  }
-}
-
-variable "allow_extension_operations" {
-  type        = bool
-  description = "(Optional) Should Extension Operations be allowed on this Virtual Machine?"
-  default     = null
-}
-
-
-
-# Moniroting and Diagnostics
-variable "boot_diagnostics" {
-  type = object({
-    storage_account_uri = string #(Required) The Primary/Secondary Endpoint for the Azure Storage Account which should be used to store Boot Diagnostics
-  })
-  description = "(Optional) A boot_diagnostics block as defined below"
-  default = {
-    storage_account_uri = null
-  }
-}
-variable "provision_vm_agent" {
-  type        = bool
-  description = "(Optional) Should the Azure VM Agent be provisioned on this Virtual Machine?"
-  default     = true
-}
-
-# Performance and Availability
-variable "dedicated_host_id" {
-  type        = string
-  description = "(Optional) The ID of a Dedicated Host where this machine should be run on"
-  default     = null
-}
-variable "proximity_placement_group_id" {
-  type        = string
-  description = "(Optional) The ID of the Proximity Placement Group which the Virtual Machine should be assigned to"
-  default     = null
-}
-variable "availability_set_id" {
-  type        = string
-  description = "(Optional) Specifies the ID of the Availability Set in which the Virtual Machine should exist"
-  default     = null
-}
-variable "zone" {
-  type        = string
-  description = "(Optional) The Zone in which this Virtual Machine should be created"
-  default     = null
-}
-
-# Spot VMs
-variable "priority" {
-  type        = string
-  description = "(Optional) Specifies the priority of this Virtual Machine"
-  default     = null
-}
-variable "eviction_policy" {
-  type        = string
-  description = "(Optional) Specifies what should happen when the Virtual Machine is evicted for price reasons when using a Spot instance"
-  default     = null
-}
-variable "max_bid_price" {
-  type        = number
-  description = "(Optional) The maximum price you're willing to pay for this Virtual Machine"
-  default     = null
-}
-
-# Marketplace Plan
-variable "plan" {
-  type = object({
-    name      = string #(Required) Specifies the Name of the Marketplace Image this Virtual Machine should be created from
-    product   = string #(Required) Specifies the Product of the Marketplace Image this Virtual Machine should be created from
-    publisher = string #(Required) Specifies the Publisher of the Marketplace Image this Virtual Machine should be created from
-  })
-  description = "(Optional) Plan block for Marketplace product"
-  default = {
-    name      = null
-    product   = null
-    publisher = null
-  }
-}
-
-
-# Security
-variable "secret" {
-  type = map(object({
-    certificate = map(object({
-      url = string #(Required) The Secret URL of a Key Vault Certificate
-    }))
-    key_vault_id = string #(Required) The ID of the Key Vault from which all Secrets should be sourced"
-  }))
-  description = "(Optional) Manage secure deployments of certificates to Linux Virtual Machine"
-  default     = {}
-}
-
-variable "vm_prefix" {
-  type        = string
-  description = "(Required) Prefix for the vm name"
-  default     = ""
-}
-
-variable "vm_suffix" {
-  type        = string
-  description = "(Optional) Suffix for the vm name"
-  default     = ""
-}
-
-variable "resource_tags" {
-  type        = map(string)
-  description = "(Optional) Tags for the resources"
-  default     = {}
-}
-
-variable "deployment_tags" {
-  type        = map(string)
-  description = "(Optional) Additional Tags for the deployment"
-  default     = {}
-}
-
-variable "it_depends_on" {
+  description = "Custom data. See https://www.terraform.io/docs/providers/azurerm/r/virtual_machine.html#os_profile block"
   type        = any
-  description = "(Optional) To define explicit dependencies if required"
   default     = null
 }
 
-variable "timeout" {
+variable "vm_size" {
+  description = "Size (SKU) of the Virtual Machine to create."
   type        = string
-  description = "(Optional) Timeout"
-  default     = "45m"
 }
 
+variable "custom_name" {
+  description = "Custom name for the Virtual Machine. Should be suffixed by \"-vm\". Generated if not set."
+  type        = string
+  default     = ""
+}
 
-// Local Values
-locals {
-  timeout_duration = var.timeout
-  vm_name          = "${var.vm_prefix}${var.name}${var.vm_suffix}"
+variable "availability_set_id" {
+  description = "Id of the availability set in which host the Virtual Machine."
+  type        = string
+  default     = null
+}
+
+variable "zone_id" {
+  description = "Index of the Availability Zone which the Virtual Machine should be allocated in."
+  type        = number
+  default     = null
+}
+
+variable "diagnostics_storage_account_name" {
+  description = "Name of the Storage Account in which store vm diagnostics"
+  type        = string
+}
+
+variable "diagnostics_storage_account_sas_token" {
+  description = "SAS token of the Storage Account in which store vm diagnostics"
+  type        = string
+}
+
+variable "vm_image" {
+  description = "Virtual Machine source image information. See https://www.terraform.io/docs/providers/azurerm/r/virtual_machine.html#storage_image_reference. This variable cannot be used if `vm_image_id` is already defined."
+  type        = map(string)
+
+  default = {
+    publisher = "Debian"
+    offer     = "debian-10"
+    sku       = "10"
+    version   = "latest"
+  }
+}
+
+variable "vm_plan" {
+  description = "Virtual Machine plan image information. See https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine#plan. This variable has to be used for BYOS image. Before using BYOS image, you need to accept legal plan terms. See https://docs.microsoft.com/en-us/cli/azure/vm/image?view=azure-cli-latest#az_vm_image_accept_terms."
+  type = object({
+    name      = string
+    product   = string
+    publisher = string
+  })
+  default = null
+}
+
+variable "storage_data_disk_config" {
+  description = <<EOT
+Map of objects to configure storage data disk(s).
+    disk1 = {
+      name                 = string , 
+      create_option        = string ,
+      disk_size_gb         = string ,
+      lun                  = string ,
+      storage_account_type = string ,
+      extra_tags           = map(string)
+    }
+EOT
+  type        = map(any)
+  default     = {}
+}
+
+variable "storage_data_disk_extra_tags" {
+  description = "[DEPRECATED] Extra tags to set on each data storage disk."
+  type        = map(string)
+  default     = {}
+}
+
+variable "vm_image_id" {
+  description = "The ID of the Image which this Virtual Machine should be created from. This variable cannot be used if `vm_image` is already defined."
+  type        = string
+  default     = null
+}
+
+variable "extra_tags" {
+  description = "Extra tags to set on each created resource."
+  type        = map(string)
+  default     = {}
+}
+
+variable "certificate_validity_in_months" {
+  description = "The created certificate validity in months"
+  type        = string
+  default     = "48"
+}
+
+variable "custom_dns_label" {
+  description = "The DNS label to use for public access. VM name if not set. DNS will be <label>.westeurope.cloudapp.azure.com"
+  type        = string
+  default     = ""
+}
+
+variable "public_ip_extra_tags" {
+  description = "Extra tags to set on the public IP resource."
+  type        = map(string)
+  default     = {}
+}
+
+variable "public_ip_sku" {
+  description = "Sku for the public IP attached to the VM. Can be `null` if no public IP needed."
+  type        = string
+  default     = "Standard"
+}
+
+variable "attach_load_balancer" {
+  description = "True to attach this VM to a Load Balancer"
+  type        = bool
+  default     = false
+}
+
+variable "load_balancer_backend_pool_id" {
+  description = "Id of the Load Balancer Backend Pool to attach the VM."
+  type        = string
+  default     = null
+}
+
+variable "attach_application_gateway" {
+  description = "True to attach this VM to an Application Gateway"
+  type        = bool
+  default     = false
+}
+
+variable "application_gateway_backend_pool_id" {
+  description = "Id of the Application Gateway Backend Pool to attach the VM."
+  type        = string
+  default     = null
+}
+
+variable "os_disk_type" {
+  description = "Specifies the type of managed disk to create (Standard_LRS, StandardSSD_LRS, Premium_LRS)"
+  type        = string
+  default     = "Standard_LRS"
+}
+
+variable "os_disk_size_gb" {
+  description = "Specifies the size of the OS disk in gigabytes"
+  type        = string
+  default     = null
+}
+
+variable "os_disk_custom_name" {
+  description = "Custom name for OS disk. Should be suffixed by \"-osdisk\". Generated if not set."
+  type        = string
+  default     = null
+}
+
+variable "os_disk_storage_account_type" {
+  description = "The Type of Storage Account which should back this the Internal OS Disk. (Standard_LRS, StandardSSD_LRS and Premium_LRS)"
+  type        = string
+  default     = "Standard_LRS"
+}
+
+variable "os_disk_caching" {
+  description = "Specifies the caching requirements for the OS Disk"
+  type        = string
+  default     = "ReadWrite"
 }
