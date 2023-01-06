@@ -64,11 +64,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
     }
   }
 
-lifecycle {
+/* lifecycle {
   ignore_changes = [
     custom_data,
   ]
-}
+} */
 }
 
 resource "azurerm_managed_disk" "disk" {
