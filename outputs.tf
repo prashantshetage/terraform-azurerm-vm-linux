@@ -1,3 +1,8 @@
+output "vm" {
+  description = "Entire VM attributes"
+  value       = azurerm_linux_virtual_machine.vm
+}
+
 output "vm_id" {
   description = "ID of the Virtual Machine"
   value       = azurerm_linux_virtual_machine.vm.id
